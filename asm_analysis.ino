@@ -74,9 +74,133 @@ uint8_t tmp_step_rate;
 uint8_t tmp_step_rate2;
 int  gain;
 int  gain2;
-// uint16_t acc_step_rate;
-// long acceleration_time;
-// long acceleration_rate;
+
+
+void printBits(byte myByte){
+ for(byte mask = 0x80; mask; mask >>= 1){
+   if(mask  & myByte)
+       Serial.print('1');
+   else
+       Serial.print('0');
+ }
+}
+
+
+uint16_t MultiU16X8toH16_emulation(uint8_t charIn1, uint16_t intIn2){
+	uint8_t r26 = 0;
+	uint8_t a0,b0;    // output
+	uint8_t a1,a2,b2; //input
+	a1 = charIn1;
+	a2 = intIn2;
+    b2 = intIn2 >> 8;
+    uint16_t r1r0 = (uint16_t)a1*(uint16_t)b2;
+    uint8_t r1 = r1r0 >> 8;
+    uint8_t r0 = r1r0;
+    a0 = r0;
+    r1r0 = (int)a1*(int)a2;
+    r1 = r1r0 >> 8;
+    // r0 = r1r0; //not needed
+    a0 = a0 + r1;
+    b0 = r26;
+    // r0 = r0 >> 1; //not needed
+    // a0 = a0 + r26; //this does nothing
+    // b0 = b0 + r26; //this does nothing
+    // r1 = 0; //not needed
+    uint16_t result = (b0<<8) + a0;
+    return result;
+}
+
+uint16_t MultiU24X24toH16_emulation(uint32_t longIn1, uint32_t longIn2){
+	uint8_t a0,b0;    // output 16bit
+	uint8_t a1,b1,c1,a2,b2,c2; //input 32bit
+	a1 = longIn1;
+	b1 = longIn1>>8;
+	c1 = longIn1>>16;
+	a2 = longIn2;
+    b2 = longIn2>>8;
+    c2 = longIn2>>16;
+
+	uint8_t r26 = 0;
+	uint8_t r27;
+
+    uint16_t r1r0 = (uint16_t)a1*(uint16_t)b2;
+    uint8_t r1 = r1r0 >> 8;
+    uint8_t r0 = r1r0;
+
+    r27 = r1;
+
+    r1r0 = (uint16_t)b1*(uint16_t)c2;
+    r1 = r1r0 >> 8;
+    r0 = r1r0;
+
+    a0 = r0;
+    b0 = r1;
+
+    r1r0 = (uint16_t)c1*(uint16_t)c2;
+    r1 = r1r0 >> 8;
+    r0 = r1r0;
+
+    b0 = b0 + r0;
+
+    r1r0 = (uint16_t)c1*(uint16_t)b2;
+    r1 = r1r0 >> 8;
+    r0 = r1r0;
+
+    a0 = a0 + r0;
+
+    b0 = b0 + r1;
+
+    r1r0 = (uint16_t)a1*(uint16_t)c2;
+    r1 = r1r0 >> 8;
+    r0 = r1r0;
+
+    r27 = r27 + r0;
+
+    a0 = a0 + r1;
+
+    b0 = b0 + r26;
+
+    r1r0 = (uint16_t)b1*(uint16_t)b2;
+    r1 = r1r0 >> 8;
+    r0 = r1r0;
+
+    r27 = r27 + r0;
+
+    a0 = a0 + r1;
+
+    b0 = b0 + r26;
+
+    r1r0 = (uint16_t)c1*(uint16_t)a2;
+    r1 = r1r0 >> 8;
+    r0 = r1r0;
+
+    r27 = r27 + r0;
+
+    a0 = a0 + r1;
+
+    b0 = b0 + r26;
+
+    r1r0 = (uint16_t)b1*(uint16_t)a2;
+    r1 = r1r0 >> 8;
+    r0 = r1r0;
+
+    r27 = r27 + r1;
+
+    a0 = a0 + r26;
+
+    b0 = b0 + r26;
+
+    r27 = r27 >> 1;
+
+    a0 = a0 + r26;
+
+    b0 = b0 + r26;
+
+    r1 = 0;
+
+    uint16_t result = (b0<<8) + a0;
+    return result;
+}
 
 void setVar(){
 	timer = 0;
@@ -185,99 +309,100 @@ void loop() {
 
 	// Serial.println("**********");
 	// assembler line-by-line emulation
-	uint8_t a0,b0;    // output 16bit
-	uint8_t a1,b1,c1,a2,b2,c2; //input 32bit
-	a1 = acc_time;
-	b1 = acc_time>>8;
-	c1 = acc_time>>16;
-	a2 = acc_rate;
-    b2 = acc_rate>>8;
-    c2 = acc_rate>>16;
+	// uint8_t a0,b0;    // output 16bit
+	// uint8_t a1,b1,c1,a2,b2,c2; //input 32bit
+	// a1 = acc_time;
+	// b1 = acc_time>>8;
+	// c1 = acc_time>>16;
+	// a2 = acc_rate;
+ //    b2 = acc_rate>>8;
+ //    c2 = acc_rate>>16;
 
-	uint8_t r26 = 0;
-	uint8_t r27;
+	// uint8_t r26 = 0;
+	// uint8_t r27;
 
-    int r1r0 = (int)a1*(int)b2;
-    uint8_t r1 = r1r0 >> 8;
-    uint8_t r0 = r1r0;
+ //    int r1r0 = (int)a1*(int)b2;
+ //    uint8_t r1 = r1r0 >> 8;
+ //    uint8_t r0 = r1r0;
 
-    r27 = r1;
+ //    r27 = r1;
 
-    r1r0 = (int)b1*(int)c2;
-    r1 = r1r0 >> 8;
-    r0 = r1r0;
+ //    r1r0 = (int)b1*(int)c2;
+ //    r1 = r1r0 >> 8;
+ //    r0 = r1r0;
 
-    a0 = r0;
-    b0 = r1;
+ //    a0 = r0;
+ //    b0 = r1;
 
-    r1r0 = (int)c1*(int)c2;
-    r1 = r1r0 >> 8;
-    r0 = r1r0;
+ //    r1r0 = (int)c1*(int)c2;
+ //    r1 = r1r0 >> 8;
+ //    r0 = r1r0;
 
-    b0 = b0 + r0;
+ //    b0 = b0 + r0;
 
-    r1r0 = (int)c1*(int)b2;
-    r1 = r1r0 >> 8;
-    r0 = r1r0;
+ //    r1r0 = (int)c1*(int)b2;
+ //    r1 = r1r0 >> 8;
+ //    r0 = r1r0;
 
-    a0 = a0 + r0;
+ //    a0 = a0 + r0;
 
-    b0 = b0 + r1;
+ //    b0 = b0 + r1;
 
-    r1r0 = (int)a1*(int)c2;
-    r1 = r1r0 >> 8;
-    r0 = r1r0;
+ //    r1r0 = (int)a1*(int)c2;
+ //    r1 = r1r0 >> 8;
+ //    r0 = r1r0;
 
-    r27 = r27 + r0;
+ //    r27 = r27 + r0;
 
-    a0 = a0 + r1;
+ //    a0 = a0 + r1;
 
-    b0 = b0 + r26;
+ //    b0 = b0 + r26;
 
-    r1r0 = (int)b1*(int)b2;
-    r1 = r1r0 >> 8;
-    r0 = r1r0;
+ //    r1r0 = (int)b1*(int)b2;
+ //    r1 = r1r0 >> 8;
+ //    r0 = r1r0;
 
-    r27 = r27 + r0;
+ //    r27 = r27 + r0;
 
-    a0 = a0 + r1;
+ //    a0 = a0 + r1;
 
-    b0 = b0 + r26;
+ //    b0 = b0 + r26;
 
-    r1r0 = (int)c1*(int)a2;
-    r1 = r1r0 >> 8;
-    r0 = r1r0;
+ //    r1r0 = (int)c1*(int)a2;
+ //    r1 = r1r0 >> 8;
+ //    r0 = r1r0;
 
-    r27 = r27 + r0;
+ //    r27 = r27 + r0;
 
-    a0 = a0 + r1;
+ //    a0 = a0 + r1;
 
-    b0 = b0 + r26;
+ //    b0 = b0 + r26;
 
-    r1r0 = (int)b1*(int)a2;
-    r1 = r1r0 >> 8;
-    r0 = r1r0;
+ //    r1r0 = (int)b1*(int)a2;
+ //    r1 = r1r0 >> 8;
+ //    r0 = r1r0;
 
-    r27 = r27 + r1;
+ //    r27 = r27 + r1;
 
-    a0 = a0 + r26;
+ //    a0 = a0 + r26;
 
-    b0 = b0 + r26;
+ //    b0 = b0 + r26;
 
-    r27 = r27 >> 1;
+ //    r27 = r27 >> 1;
 
-    a0 = a0 + r26;
+ //    a0 = a0 + r26;
 
-    b0 = b0 + r26;
+ //    b0 = b0 + r26;
 
-    r1 = 0;
+ //    r1 = 0;
 
-    int result = (b0<<8) + a0;
+ //    int result = (b0<<8) + a0;
     // Serial.print("a0: ");Serial.println(a0);
     // Serial.print("b0: ");Serial.println(b0);
     // Serial.println("acc step rate:");
     // printBits(b0);printBits(a0); 
     // Serial.println();
+	int result = MultiU24X24toH16_emulation(acc_time, acc_rate);
     Serial.println(result,DEC);
 
     acc_time = acc_time + 10000;
@@ -285,13 +410,3 @@ void loop() {
     	acc_time = 1000;
     }
 }
-
-void printBits(byte myByte){
- for(byte mask = 0x80; mask; mask >>= 1){
-   if(mask  & myByte)
-       Serial.print('1');
-   else
-       Serial.print('0');
- }
-}
-
