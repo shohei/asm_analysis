@@ -2,7 +2,7 @@
 // uses:
 // r26 to store 0
 // r27 to store the byte 1 of the 24 bit result
-#define Hoge(intRes, charIn1, intIn2) \
+#define MultiU16X8toH16(intRes, charIn1, intIn2) \
 asm volatile ( \
 	"clr r26 \n\t" \
 	"mul %A1, %B2 \n\t" \
@@ -27,7 +27,7 @@ asm volatile ( \
 // uses:
 // r26 to store 0
 // r27 to store the byte 1 of the 48bit result
-#define Foo(intRes, longIn1, longIn2) \
+#define MultiU24X24toH16(intRes, longIn1, longIn2) \
 asm volatile ( \
 	"clr r26 \n\t" \
 	"mul %A1, %B2 \n\t" \
@@ -92,7 +92,7 @@ void simulation1(){
 	// tmp_step_rate2 = B01111111; //8bit
 	// gain2 = (B01111111 * 256) + B01111111;//16bit
 	setVar();
-	Hoge(timer2, tmp_step_rate2, gain2);
+	MultiU16X8toH16(timer2, tmp_step_rate2, gain2);
 	Serial.println("A*B >> 16 (ASM)");
 	printBits(timer2>>8);printBits(timer2);
 	Serial.println();
@@ -141,18 +141,18 @@ void simulation1(){
 	printBits(gain%256);
 	Serial.println();
 
-	long hoge = ((long) tmp_step_rate * (long) gain); //32bit
+	long MultiU16X8toH16 = ((long) tmp_step_rate * (long) gain); //32bit
 	Serial.print(tmp_step_rate,DEC);
 	Serial.print("x");
 	Serial.print(gain,DEC);
 	Serial.print("=");
-	Serial.println(hoge);
+	Serial.println(MultiU16X8toH16);
 	Serial.print("Full bits: ");
-	printBits(hoge >> 16);
-	printBits(hoge >> 8);
-	printBits(hoge);
+	printBits(MultiU16X8toH16 >> 16);
+	printBits(MultiU16X8toH16 >> 8);
+	printBits(MultiU16X8toH16);
 	Serial.println();
-	char moge = (hoge) >> 16;
+	char moge = (MultiU16X8toH16) >> 16;
 	Serial.print(">>16 bits shift: ");
 	printBits(moge>>8);printBits(moge);
 	Serial.println();
@@ -168,7 +168,7 @@ void setup(){
 
 void loop() {
     // put your setup code here, to run once:
-	// test for Hoge();
+	// test for MultiU16X8toH16();
 	// simulation1();
 	// 値を調べる
 	unsigned short acc_step_rate;
@@ -176,7 +176,7 @@ void loop() {
 	// long acc_time = 12885; //32bit
 	long acc_rate = 671088; //32bit
 	// acc_step_rate: 516, acc_time: 12885, acc_rate: 671088
-	Foo(acc_step_rate, acc_time, acc_rate);
+	MultiU24X24toH16(acc_step_rate, acc_time, acc_rate);
 	Serial.print(acc_time);Serial.print(",");
 	Serial.print(acc_step_rate);Serial.print(",");
 	// Serial.print("acc step rate: ");Serial.println(acc_step_rate);
